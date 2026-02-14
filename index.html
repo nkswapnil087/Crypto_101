@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto 101 - Cryptography Workshop</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <h1>🔐 Crypto 101 Workshop</h1>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="index.html" class="active">🏠 Home</a></li>
+                <li><a href="challenges.html">🎯 Challenges</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Welcome to Crypto 101</h1>
+                <p>Learn the fundamentals of cryptography through hands-on challenges</p>
+                <a href="challenges.html" class="btn btn-primary">Start Challenges</a>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="about">
+            <h2>About This Workshop</h2>
+            <p>
+                Crypto 101 is a beginner-friendly introduction to cryptographic concepts. This workshop
+                teaches essential cryptography fundamentals through practical Capture The Flag (CTF) challenges.
+                Solve challenges, learn encryption techniques, and climb the scoreboard!
+            </p>
+        </section>
+
+        <!-- Lessons Section -->
+        <section class="lessons">
+            <div class="section-header">
+                <h2>📚 Lessons</h2>
+            </div>
+
+            <!-- Lessons List -->
+            <div id="lessonsList" class="lessons-list">
+                <p class="loading">Loading lessons...</p>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats">
+            <h2>📊 Your Progress</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="completedCount">0</h3>
+                    <p>Challenges Completed</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalScore">0</h3>
+                    <p>Total Points</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="lessonCount">0</h3>
+                    <p>Lessons Available</p>
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="resetProgress" class="btn btn-warning">Reset My Progress</button>
+                <a href="admin.html" class="btn btn-secondary">👨‍🏫 Instructor Access</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Crypto 101 Workshop. Made by <a href="https://github.com/nkswapnil087" target="_blank">@nkswapnil087</a></p>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Initialize homepage
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeHomepage();
+        });
+
+        function initializeHomepage() {
+            renderLessons();
+            updateStats();
+
+            // Reset progress
+            document.getElementById('resetProgress').addEventListener('click', function() {
+                if (confirm('Are you sure? This will reset all your progress and scores.')) {
+                    const completedChallenges = localStorage.getItem(STORAGE_KEYS.COMPLETED_CHALLENGES);
+                    const userScore = localStorage.getItem(STORAGE_KEYS.USER_SCORE);
+                    const scoreboard = localStorage.getItem(STORAGE_KEYS.SCOREBOARD);
+                    
+                    localStorage.removeItem(STORAGE_KEYS.COMPLETED_CHALLENGES);
+                    localStorage.removeItem(STORAGE_KEYS.USER_SCORE);
+                    localStorage.removeItem(STORAGE_KEYS.SCOREBOARD);
+                    
+                    renderLessons();
+                    updateStats();
+                    alert('Your progress has been reset!');
+                }
+            });
+        }
+
+        function renderLessons() {
+            const lessons = getLessons();
+            const container = document.getElementById('lessonsList');
+
+            if (lessons.length === 0) {
+                container.innerHTML = '<p class="empty-state">No lessons available yet.</p>';
+                return;
+            }
+
+            let html = '<div class="lessons-grid">';
+            lessons.forEach((lesson, index) => {
+                const preview = lesson.content.substring(0, 100) + '...';
+                html += `
+                    <div class="lesson-card">
+                        <h3>${escapeHtml(lesson.title)}</h3>
+                        <p>${escapeHtml(preview)}</p>
+                        <div class="card-actions">
+                            <button class="btn btn-small btn-info" onclick="viewLesson(${index})">Read Lesson</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function viewLesson(index) {
+            const lessons = getLessons();
+            const lesson = lessons[index];
+
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>${escapeHtml(lesson.title)}</h2>
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="lesson-content">
+                            ${escapeHtml(lesson.content).replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        function updateStats() {
+            const userScore = getUserScore();
+            const completedChallenges = getCompletedChallenges().length;
+            const lessons = getLessons().length;
+
+            document.getElementById('completedCount').textContent = completedChallenges;
+            document.getElementById('totalScore').textContent = userScore;
+            document.getElementById('lessonCount').textContent = lessons;
+        }
+    </script>
+</body>
+</html>

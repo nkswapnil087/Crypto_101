@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Crypto 101</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Password Protection Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content auth-modal">
+            <div class="modal-header">
+                <h2>🔐 Instructor Access</h2>
+            </div>
+            <div class="modal-body">
+                <p>This is a restricted area for instructors only.</p>
+                <form id="authForm">
+                    <div class="form-group">
+                        <label for="adminPassword">Enter Access Code:</label>
+                        <input type="password" id="adminPassword" placeholder="Enter password" required autofocus>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Access Admin Panel</button>
+                        <a href="index.html" class="btn btn-secondary">Back to Home</a>
+                    </div>
+                </form>
+                <p class="hint-text">💡 Hint: The default password is 'admin123'</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Content (Hidden until authenticated) -->
+    <div id="adminContent" class="hidden">
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <h1>🔐 Crypto 101 Workshop</h1>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="challenges.html">Challenges</a></li>
+                <li><a href="admin.html" class="active">Admin Panel</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="admin-section">
+            <h1>Admin Panel</h1>
+            <p class="info-text">📋 Manage lessons and challenges for the workshop.</p>
+
+            <!-- Tab Navigation -->
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="switchTab('lessons')">Manage Lessons</button>
+                <button class="tab-btn" onclick="switchTab('challenges')">Manage Challenges</button>
+            </div>
+
+            <!-- Lessons Tab -->
+            <div id="lessonsTab" class="tab-content active">
+                <div class="admin-header">
+                    <h2>Lessons Management</h2>
+                    <button class="btn btn-primary" onclick="toggleLessonForm()">+ Add New Lesson</button>
+                </div>
+
+                <!-- Add/Edit Lesson Form -->
+                <div id="lessonFormContainer" class="admin-form hidden">
+                    <h3 id="formTitle">Add New Lesson</h3>
+                    <form id="adminLessonForm">
+                        <div class="form-group">
+                            <label for="adminLessonTitle">Title:</label>
+                            <input type="text" id="adminLessonTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminLessonContent">Content:</label>
+                            <textarea id="adminLessonContent" required rows="8"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-success">Save Lesson</button>
+                            <button type="button" class="btn btn-secondary" onclick="toggleLessonForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Lessons List -->
+                <div id="adminLessonsList" class="admin-list">
+                    <p class="loading">Loading lessons...</p>
+                </div>
+            </div>
+
+            <!-- Challenges Tab -->
+            <div id="challengesTab" class="tab-content">
+                <div class="admin-header">
+                    <h2>Challenges Management</h2>
+                    <button class="btn btn-primary" onclick="toggleChallengeForm()">+ Add New Challenge</button>
+                </div>
+
+                <!-- Add/Edit Challenge Form -->
+                <div id="challengeFormContainer" class="admin-form hidden">
+                    <h3 id="challengeFormTitle">Add New Challenge</h3>
+                    <form id="adminChallengeForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="adminChallengeTitle">Title:</label>
+                                <input type="text" id="adminChallengeTitle" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="adminChallengeCategory">Category:</label>
+                                <input type="text" id="adminChallengeCategory" placeholder="e.g., Caesar Cipher" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="adminChallengeDifficulty">Difficulty:</label>
+                                <select id="adminChallengeDifficulty" required>
+                                    <option value="">Select difficulty</option>
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Hard">Hard</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="adminChallengePoints">Points:</label>
+                                <input type="number" id="adminChallengePoints" min="10" max="500" value="100" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="adminChallengeDescription">Description:</label>
+                            <textarea id="adminChallengeDescription" required rows="4"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="adminChallengeEncrypted">Encrypted Content:</label>
+                            <textarea id="adminChallengeEncrypted" required rows="3" placeholder="e.g., KHOOR ZRUOG"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="adminChallengeFlag">Flag (correct answer):</label>
+                            <input type="text" id="adminChallengeFlag" required placeholder="FLAG{correct_answer}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="adminChallengeHint">Hint:</label>
+                            <textarea id="adminChallengeHint" rows="2" placeholder="Helpful hint for users"></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-success">Save Challenge</button>
+                            <button type="button" class="btn btn-secondary" onclick="toggleChallengeForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Challenges List -->
+                <div id="adminChallengesList" class="admin-list">
+                    <p class="loading">Loading challenges...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Crypto 101 Workshop. Made by <a href="https://github.com/nkswapnil087" target="_blank">@nkswapnil087</a></p>
+    </footer>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        // ============= AUTHENTICATION =============
+        const ADMIN_PASSWORD = 'admin123';
+        let isAuthenticated = false;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if already authenticated
+            const authToken = sessionStorage.getItem('adminAuth');
+            if (authToken === 'verified') {
+                isAuthenticated = true;
+                showAdminPanel();
+            } else {
+                showAuthModal();
+            }
+        });
+
+        function showAuthModal() {
+            document.getElementById('authModal').classList.remove('hidden');
+            document.getElementById('adminContent').classList.add('hidden');
+            
+            document.getElementById('authForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                authenticateAdmin();
+            });
+        }
+
+        function authenticateAdmin() {
+            const password = document.getElementById('adminPassword').value;
+            
+            if (password === ADMIN_PASSWORD) {
+                sessionStorage.setItem('adminAuth', 'verified');
+                isAuthenticated = true;
+                document.getElementById('authModal').classList.add('hidden');
+                showAdminPanel();
+            } else {
+                alert('❌ Incorrect access code. Please try again.');
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminPassword').focus();
+            }
+        }
+
+        function showAdminPanel() {
+            document.getElementById('adminContent').classList.remove('hidden');
+            initializeAdminPanel();
+        }
+
+        function initializeAdminPanel() {
+            renderAdminLessons();
+            renderAdminChallenges();
+
+            // Lesson form submission
+            document.getElementById('adminLessonForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveLessonFromAdmin();
+            });
+
+            // Challenge form submission
+            document.getElementById('adminChallengeForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveChallengeFromAdmin();
+            });
+        }
+
+        // ============= TABS =============
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ============= LESSONS MANAGEMENT =============
+        function toggleLessonForm() {
+            const form = document.getElementById('lessonFormContainer');
+            form.classList.toggle('hidden');
+            if (!form.classList.contains('hidden')) {
+                document.getElementById('adminLessonTitle').focus();
+            } else {
+                resetLessonForm();
+            }
+        }
+
+        function renderAdminLessons() {
+            const lessons = getLessons();
+            const container = document.getElementById('adminLessonsList');
+
+            if (lessons.length === 0) {
+                container.innerHTML = '<p class="empty-state">No lessons yet. Create one to get started!</p>';
+                return;
+            }
+
+            let html = '<div class="admin-items">';
+            lessons.forEach((lesson, index) => {
+                const preview = lesson.content.substring(0, 50) + '...';
+                const date = new Date(lesson.createdAt).toLocaleDateString();
+                html += `
+                    <div class="admin-item">
+                        <div class="item-content">
+                            <h4>${escapeHtml(lesson.title)}</h4>
+                            <p>${escapeHtml(preview)}</p>
+                            <span class="item-meta">Created: ${date}</span>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn btn-small btn-info" onclick="editLessonAdmin(${index})">Edit</button>
+                            <button class="btn btn-small btn-danger" onclick="deleteLessonAdmin(${index})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function editLessonAdmin(index) {
+            const lessons = getLessons();
+            const lesson = lessons[index];
+            editingLessonIndex = index;
+
+            document.getElementById('formTitle').textContent = 'Edit Lesson';
+            document.getElementById('adminLessonTitle').value = lesson.title;
+            document.getElementById('adminLessonContent').value = lesson.content;
+            document.getElementById('lessonFormContainer').classList.remove('hidden');
+            document.getElementById('adminLessonTitle').focus();
+        }
+
+        function deleteLessonAdmin(index) {
+            if (confirm('Are you sure you want to delete this lesson?')) {
+                const lessons = getLessons();
+                lessons.splice(index, 1);
+                saveLessons(lessons);
+                renderAdminLessons();
+            }
+        }
+
+        function saveLessonFromAdmin() {
+            const title = document.getElementById('adminLessonTitle').value.trim();
+            const content = document.getElementById('adminLessonContent').value.trim();
+
+            if (!title || !content) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const lessons = getLessons();
+
+            if (editingLessonIndex !== null) {
+                // Update existing
+                lessons[editingLessonIndex] = {
+                    ...lessons[editingLessonIndex],
+                    title: title,
+                    content: content
+                };
+            } else {
+                // Add new
+                lessons.push({
+                    id: Date.now(),
+                    title: title,
+                    content: content,
+                    createdAt: new Date().toISOString()
+                });
+            }
+
+            saveLessons(lessons);
+            resetLessonForm();
+            document.getElementById('lessonFormContainer').classList.add('hidden');
+            renderAdminLessons();
+            alert('Lesson saved successfully!');
+        }
+
+        function resetLessonForm() {
+            document.getElementById('adminLessonForm').reset();
+            document.getElementById('formTitle').textContent = 'Add New Lesson';
+            editingLessonIndex = null;
+        }
+
+        // ============= CHALLENGES MANAGEMENT =============
+        function toggleChallengeForm() {
+            const form = document.getElementById('challengeFormContainer');
+            form.classList.toggle('hidden');
+            if (!form.classList.contains('hidden')) {
+                document.getElementById('adminChallengeTitle').focus();
+            } else {
+                resetChallengeForm();
+            }
+        }
+
+        function renderAdminChallenges() {
+            const challenges = getChallenges();
+            const container = document.getElementById('adminChallengesList');
+
+            if (challenges.length === 0) {
+                container.innerHTML = '<p class="empty-state">No challenges yet. Create one to get started!</p>';
+                return;
+            }
+
+            let html = '<div class="admin-items">';
+            challenges.forEach((challenge, index) => {
+                const date = new Date(challenge.createdAt).toLocaleDateString();
+                html += `
+                    <div class="admin-item">
+                        <div class="item-content">
+                            <h4>${escapeHtml(challenge.title)} <span class="badge">${challenge.difficulty}</span></h4>
+                            <p><strong>Category:</strong> ${escapeHtml(challenge.category)}</p>
+                            <p><strong>Points:</strong> ${challenge.points}</p>
+                            <p><strong>Flag:</strong> <code>${escapeHtml(challenge.flag)}</code></p>
+                            <span class="item-meta">Created: ${date}</span>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn btn-small btn-info" onclick="editChallengeAdmin(${index})">Edit</button>
+                            <button class="btn btn-small btn-danger" onclick="deleteChallengeAdmin(${index})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function editChallengeAdmin(index) {
+            const challenges = getChallenges();
+            const challenge = challenges[index];
+            editingChallengeIndex = index;
+
+            document.getElementById('challengeFormTitle').textContent = 'Edit Challenge';
+            document.getElementById('adminChallengeTitle').value = challenge.title;
+            document.getElementById('adminChallengeCategory').value = challenge.category;
+            document.getElementById('adminChallengeDifficulty').value = challenge.difficulty;
+            document.getElementById('adminChallengePoints').value = challenge.points;
+            document.getElementById('adminChallengeDescription').value = challenge.description;
+            document.getElementById('adminChallengeEncrypted').value = challenge.encrypted;
+            document.getElementById('adminChallengeFlag').value = challenge.flag;
+            document.getElementById('adminChallengeHint').value = challenge.hint;
+            document.getElementById('challengeFormContainer').classList.remove('hidden');
+            document.getElementById('adminChallengeTitle').focus();
+        }
+
+        function deleteChallengeAdmin(index) {
+            if (confirm('Are you sure you want to delete this challenge?')) {
+                const challenges = getChallenges();
+                challenges.splice(index, 1);
+                saveChallenges(challenges);
+                renderAdminChallenges();
+            }
+        }
+
+        function saveChallengeFromAdmin() {
+            const title = document.getElementById('adminChallengeTitle').value.trim();
+            const category = document.getElementById('adminChallengeCategory').value.trim();
+            const difficulty = document.getElementById('adminChallengeDifficulty').value;
+            const points = parseInt(document.getElementById('adminChallengePoints').value);
+            const description = document.getElementById('adminChallengeDescription').value.trim();
+            const encrypted = document.getElementById('adminChallengeEncrypted').value.trim();
+            const flag = document.getElementById('adminChallengeFlag').value.trim();
+            const hint = document.getElementById('adminChallengeHint').value.trim();
+
+            // Validation
+            if (!title || !category || !difficulty || !description || !encrypted || !flag) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            if (!flag.startsWith('FLAG{') || !flag.endsWith('}')) {
+                alert('Flag must be in format: FLAG{...}');
+                return;
+            }
+
+            const challenges = getChallenges();
+
+            if (editingChallengeIndex !== null) {
+                // Update existing
+                challenges[editingChallengeIndex] = {
+                    ...challenges[editingChallengeIndex],
+                    title: title,
+                    category: category,
+                    difficulty: difficulty,
+                    points: points,
+                    description: description,
+                    encrypted: encrypted,
+                    flag: flag,
+                    hint: hint
+                };
+            } else {
+                // Add new
+                challenges.push({
+                    id: Date.now(),
+                    title: title,
+                    category: category,
+                    difficulty: difficulty,
+                    points: points,
+                    description: description,
+                    encrypted: encrypted,
+                    flag: flag,
+                    hint: hint,
+                    createdAt: new Date().toISOString()
+                });
+            }
+
+            saveChallenges(challenges);
+            resetChallengeForm();
+            document.getElementById('challengeFormContainer').classList.add('hidden');
+            renderAdminChallenges();
+            alert('Challenge saved successfully!');
+        }
+
+        function resetChallengeForm() {
+            document.getElementById('adminChallengeForm').reset();
+            document.getElementById('challengeFormTitle').textContent = 'Add New Challenge';
+            editingChallengeIndex = null;
+        }
+    </script>
+</body>
+</html>

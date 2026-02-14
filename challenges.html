@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenges - Crypto 101</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <h1>🔐 Crypto 101 Workshop</h1>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="challenges.html" class="active">Challenges</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="challenges-section">
+            <div class="section-header">
+                <h1>Cryptography Challenges</h1>
+                <div class="challenge-stats">
+                    <span id="scoreDisplay">Score: 0</span>
+                    <span id="completedDisplay">Completed: 0/5</span>
+                </div>
+            </div>
+
+            <!-- Scoreboard -->
+            <div class="scoreboard">
+                <h2>Scoreboard</h2>
+                <div id="scoreboard" class="scoreboard-grid">
+                    <p class="loading">Loading scoreboard...</p>
+                </div>
+            </div>
+
+            <!-- Challenges Grid -->
+            <div id="challengesContainer" class="challenges-grid">
+                <p class="loading">Loading challenges...</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Challenge Modal -->
+    <div id="challengeModal" class="modal hidden">
+        <div class="modal-content challenge-modal">
+            <button class="modal-close" onclick="closeChallenge()">&times;</button>
+            <div class="modal-header">
+                <h2 id="challengeTitle">Challenge Title</h2>
+                <span id="challengePoints" class="points-badge">100 pts</span>
+            </div>
+
+            <div class="modal-body">
+                <div class="challenge-description">
+                    <h3>Description</h3>
+                    <p id="challengeDescription">Description here</p>
+                </div>
+
+                <div class="challenge-content">
+                    <h3>Challenge Content</h3>
+                    <div id="challengeContentDisplay" class="content-box">
+                        <!-- Content will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="challenge-hint">
+                    <details>
+                        <summary>📌 <strong>Hint</strong></summary>
+                        <p id="challengeHint">Hint text here</p>
+                    </details>
+                </div>
+
+                <form id="flagForm" class="flag-submission">
+                    <div class="form-group">
+                        <label for="flagInput">Submit Your Flag:</label>
+                        <input 
+                            type="text" 
+                            id="flagInput" 
+                            placeholder="FLAG{your_answer_here}"
+                            autocomplete="off"
+                        >
+                        <span id="flagStatus" class="flag-status"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Submit Flag</button>
+                </form>
+
+                <div id="successMessage" class="success-message hidden">
+                    ✅ Correct! You earned <span id="earnedPoints">100</span> points!
+                </div>
+                <div id="errorMessage" class="error-message hidden">
+                    ❌ Incorrect flag. Try again!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Crypto 101 Workshop. Made by <a href="https://github.com/nkswapnil087" target="_blank">@nkswapnil087</a></p>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        let currentChallengeIndex = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderChallenges();
+            renderScoreboard();
+
+            // Handle flag form submission
+            document.getElementById('flagForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitFlag();
+            });
+        });
+
+        function renderChallenges() {
+            const challenges = getChallenges();
+            const container = document.getElementById('challengesContainer');
+            const completed = getCompletedChallenges();
+
+            if (challenges.length === 0) {
+                container.innerHTML = '<p class="empty-state">No challenges available yet.</p>';
+                return;
+            }
+
+            let html = '';
+            challenges.forEach((challenge, index) => {
+                const isCompleted = completed.includes(challenge.id);
+                const completedClass = isCompleted ? 'completed' : '';
+                const completedBadge = isCompleted ? '✅' : '';
+
+                html += `
+                    <div class="challenge-card ${completedClass}" onclick="openChallenge(${index})">
+                        <div class="challenge-card-header">
+                            <h3>${escapeHtml(challenge.title)} ${completedBadge}</h3>
+                            <span class="points-badge">${challenge.points} pts</span>
+                        </div>
+                        <p class="challenge-category">${escapeHtml(challenge.category)}</p>
+                        <p class="challenge-difficulty">Difficulty: ${escapeHtml(challenge.difficulty)}</p>
+                        <p class="challenge-preview">${escapeHtml(challenge.description.substring(0, 80))}...</p>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            updateChallengeStats();
+        }
+
+        function openChallenge(index) {
+            currentChallengeIndex = index;
+            const challenges = getChallenges();
+            const challenge = challenges[index];
+
+            document.getElementById('challengeTitle').textContent = challenge.title;
+            document.getElementById('challengePoints').textContent = challenge.points + ' pts';
+            document.getElementById('challengeDescription').textContent = challenge.description;
+            document.getElementById('challengeHint').textContent = challenge.hint;
+
+            // Display encrypted content
+            const contentDisplay = document.getElementById('challengeContentDisplay');
+            contentDisplay.innerHTML = `<code>${escapeHtml(challenge.encrypted)}</code>`;
+
+            // Reset form
+            document.getElementById('flagInput').value = '';
+            document.getElementById('flagStatus').textContent = '';
+            document.getElementById('successMessage').classList.add('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+
+            // Check if already completed
+            const completed = getCompletedChallenges();
+            if (completed.includes(challenge.id)) {
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('flagInput').disabled = true;
+                document.getElementById('successMessage').classList.remove('hidden');
+            } else {
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('flagInput').disabled = false;
+            }
+
+            document.getElementById('challengeModal').classList.remove('hidden');
+            document.getElementById('flagInput').focus();
+        }
+
+        function closeChallenge() {
+            document.getElementById('challengeModal').classList.add('hidden');
+            currentChallengeIndex = null;
+        }
+
+        function submitFlag() {
+            if (currentChallengeIndex === null) return;
+
+            const challenges = getChallenges();
+            const challenge = challenges[currentChallengeIndex];
+            const userFlag = document.getElementById('flagInput').value.trim();
+
+            // Validate flag format
+            if (!userFlag.startsWith('FLAG{') || !userFlag.endsWith('}')) {
+                document.getElementById('flagStatus').textContent = '❌ Flag must be in format: FLAG{...}';
+                return;
+            }
+
+            // Check if flag is correct
+            if (userFlag.toUpperCase() === challenge.flag.toUpperCase()) {
+                // Mark as completed and add points
+                addCompletedChallenge(challenge.id, challenge.points);
+                document.getElementById('successMessage').classList.remove('hidden');
+                document.getElementById('errorMessage').classList.add('hidden');
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('flagInput').disabled = true;
+                document.getElementById('flagStatus').textContent = '✅ Correct!';
+
+                // Update UI
+                renderChallenges();
+                renderScoreboard();
+            } else {
+                document.getElementById('errorMessage').classList.remove('hidden');
+                document.getElementById('successMessage').classList.add('hidden');
+                document.getElementById('flagStatus').textContent = '❌ Incorrect!';
+            }
+        }
+
+        function updateChallengeStats() {
+            const completed = getCompletedChallenges();
+            const challenges = getChallenges();
+            const totalScore = getUserScore();
+
+            document.getElementById('scoreDisplay').textContent = 'Score: ' + totalScore;
+            document.getElementById('completedDisplay').textContent = 'Completed: ' + completed.length + '/' + challenges.length;
+        }
+
+        function renderScoreboard() {
+            const scores = getScoreboard();
+            const container = document.getElementById('scoreboard');
+
+            if (scores.length === 0) {
+                container.innerHTML = '<p class="empty-state">No scores yet. Complete a challenge to appear on the scoreboard!</p>';
+                return;
+            }
+
+            let html = '<table class="scoreboard-table"><thead><tr><th>Rank</th><th>Challenge</th><th>Points</th><th>Date</th></tr></thead><tbody>';
+            scores.forEach((score, index) => {
+                const date = new Date(score.date).toLocaleDateString();
+                html += `
+                    <tr>
+                        <td>#${index + 1}</td>
+                        <td>${escapeHtml(score.challengeName)}</td>
+                        <td><strong>${score.points}</strong></td>
+                        <td>${date}</td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeChallenge();
+            }
+        });
+    </script>
+</body>
+</html>
