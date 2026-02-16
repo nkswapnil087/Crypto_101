@@ -145,7 +145,7 @@ body::before {
 .navbar-menu a.active {
     color: var(--dark-bg);
     background: var(--neon-cyan);
-    box-shadow: 0 0 15px var(--neon-cyan), inset 0 0 15px rgba(0, 217, 255, 0.3);
+    box-shadow: 0 0 15px var(--neon-cyan);
     text-shadow: none;
 }
 
