@@ -1,0 +1,29 @@
+# OS Files
+.DS_Store
+Thumbs.db
+*.log
+
+# Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.cache/
+dist/
+
+# Environment
+.env
+.env.local
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# IDE
+*.sublime-project
+*.sublime-workspace
